@@ -1,0 +1,12 @@
+.vscode/
+.idea
+.DS_Store
+*~
+.log
+
+*.log
+
+*.pyc
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints
