@@ -11,7 +11,7 @@ conda activate tracer
 
 TODO:
 - You need lots of RAM: at least ~25GB
-segmentation_path = os.path.join(atlas_folder, 'WHS_SD_rat_atlas_%s.nii.gz' % atlas_version)
+- pip3 install opencv-python-headless instead of pip3 install opencv-python; see https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/26
 
 
 References:

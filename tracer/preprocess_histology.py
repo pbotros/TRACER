@@ -80,8 +80,10 @@ def preprocess_histology(histology_folder):
         height_size = int((float(histology.size[1]) * float(width_percent)))
         histology = histology.resize((histology_width, height_size), Image.NEAREST)
     
-    my_dpi = histology.info['dpi'][1]
+    my_dpi = float(histology.info['dpi'][1])
     pixdim_hist = 25.4 / my_dpi  # 1 inch = 25,4 mm
+    plt.ion()
+
     # Set up figure
     fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi), dpi=my_dpi)
     ax = fig.add_subplot(111)
@@ -93,7 +95,8 @@ def preprocess_histology(histology_folder):
     # Show the histology image
     ax.imshow(histology)
     plt.tick_params(labelbottom=False, labelleft=False)
-    plt.show(block=True)
+    plt.show(block=False)
+    plt.pause(0.001)
 
     
     if histology.size[0] > atlas_reference_size[0] or histology.size[1] > atlas_reference_size[1]:
