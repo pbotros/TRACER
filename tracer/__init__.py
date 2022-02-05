@@ -29,7 +29,7 @@ import math
 import os
 import numpy as np
 import matplotlib
-matplotlib.use('Qt5Agg')
+# matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import cv2
