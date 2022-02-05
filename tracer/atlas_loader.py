@@ -1,8 +1,8 @@
-import numpy as np
 import os
-import nibabel as nib
+
 import cv2
-from scipy import sparse
+import nibabel as nib
+import numpy as np
 
 
 def readlabel(file):
