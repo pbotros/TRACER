@@ -121,7 +121,7 @@ class ProbesRegistration(object):
         
         # Display the ATLAS
         # resolution
-        self.dpi_atl = 25.4 / self.atlas.pixdim
+        self.dpi_atl = float(25.4 / self.atlas.pixdim)
         
         # Bregma coordinates
         self.textstr = 'Bregma (mm): c = %.3f, h = %.3f, s = %.3f \nBregma (voxels): c = 653, h = 440, s = 246' % (
@@ -129,6 +129,7 @@ class ProbesRegistration(object):
         # these are matplotlib.patch.Patch properties
         self.props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         # Figure
+        plt.ion()
         self.fig, self.ax = plt.subplots(1, 1)  # , figsize=(float(d1)/dpi_atl,float(d2)/dpi_atl), dpi=dpi_atl)
         # scroll cursor
         self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane)
@@ -152,7 +153,8 @@ class ProbesRegistration(object):
             self.d2 = 1024
             d3 = 512
         self.ax.format_coord = self.format_coord
-        plt.show()
+        plt.show(block=False)
+        plt.pause(0.001)
         # Fix size and location of the figure window
         self.mngr = plt.get_current_fig_manager()
         self.mngr.window.setGeometry(800, 300, self.d1, self.d2)
@@ -181,7 +183,7 @@ class ProbesRegistration(object):
                 self.plot_hist()
                 self.fig_hist.canvas.mpl_connect('key_press_event', self.on_key)
             # Set up the figure
-            plt.ioff()
+            # plt.ioff()
             self.fig_trans, self.ax_trans = plt.subplots(1, 1)
             self.mngr_trans = plt.get_current_fig_manager()
             self.mngr_trans.window.setGeometry(200, 350, self.d2, self.d1)
@@ -218,7 +220,7 @@ class ProbesRegistration(object):
         
     def plot_hist(self):
         # get the pixel dimension
-        self.dpi_hist = self.img_hist_temp[self.jj].info['dpi'][1]
+        self.dpi_hist = float(self.img_hist_temp[self.jj].info['dpi'][1])
         self.pixdim_hist = 25.4 / self.dpi_hist  # 1 inch = 25,4 mm
         # Show the HISTOLOGY
         # Set up figure
@@ -239,7 +241,8 @@ class ProbesRegistration(object):
             labelleft=False)  # labels along the bottom edge are off
         # Remove cursor position
         self.ax_hist.format_coord = lambda x, y: ''
-        plt.show()
+        plt.show(block=False)
+        plt.pause(0.001)
         # Fix size and location of the figure window
         self.mngr_hist = plt.get_current_fig_manager()
         self.mngr_hist.window.setGeometry(150, 300, self.d1, self.d2)
