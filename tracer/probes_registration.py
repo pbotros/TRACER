@@ -105,7 +105,7 @@ class ProbesRegistration(object):
             self.names = []
             for fname in os.listdir(self.processed_histology_folder):
                 image_path = os.path.join(self.processed_histology_folder, fname)
-                if any([image_path.ends_with(suffix) for suffix in ('.jpg', '.jpeg', '.tiff', '.tif')]):
+                if any([image_path.endswith(suffix) for suffix in ('.jpg', '.jpeg', '.tiff', '.tif')]):
                     self.img_hist_temp.append(Image.open(image_path).copy())
                     self.img_hist.append(cv2.imread(image_path, cv2.IMREAD_GRAYSCALE))
                     self.names.append(fname)
