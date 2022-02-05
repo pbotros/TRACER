@@ -132,13 +132,13 @@ class AtlasLoader(object):
             self.labels_index, self.labels_name, self.labels_color, self.labels_initial = readlabel(labels_item)
 
 
-        cv_plot_path = os.path.join(atlas_folder, 'cv_plot.npy')
-        edges_path = os.path.join(atlas_folder, 'Edges.npy')
-        cv_plot_disp_path = os.path.join(atlas_folder, 'cv_plot_display.npy')
+        cv_plot_path = os.path.join(atlas_folder, 'cv_plot.npz')
+        edges_path = os.path.join(atlas_folder, 'Edges.npz')
+        cv_plot_disp_path = os.path.join(atlas_folder, 'cv_plot_display.npz')
 
 
         if os.path.exists(cv_plot_path):
-            self.cv_plot = np.load(cv_plot_path) / 255
+            self.cv_plot = np.load(cv_plot_path)['cv_plot'] / 255
         else:
             print('Precomputing cv_plot...')
             # Create an inverted map so we can index below quickly
@@ -147,22 +147,22 @@ class AtlasLoader(object):
 
             # Atlas in RGB colors according with the label file #
             self.cv_plot = self.labels_color[labels_index_flat[self.segmentation_data.astype(np.int64).ravel()]].reshape(tuple(list(self.segmentation_data.shape) + [3]))
-            np.save(cv_plot_path, self.cv_plot)
+            np.savez_compressed(cv_plot_path, cv_plot=self.cv_plot)
             self.cv_plot = self.cv_plot / 255
 
         if os.path.exists(edges_path):
-            self.Edges = np.load(edges_path)
+            self.Edges = np.load(edges_path)['Edges']
         else:
             print('Precomputing edges...')
             # Get the edges of the colors defined in the label #
             self.Edges = np.empty((512, 1024, 512))
             for sl in range(0, 1024):
                 self.Edges[:, sl, :] = cv2.Canny(np.uint8((self.cv_plot[:, sl, :] * 255).transpose((1, 0, 2))), 100, 200)
-            np.save(edges_path, self.Edges)
+            np.savez_compressed(edges_path, Edges=self.Edges)
 
 
         if os.path.exists(cv_plot_disp_path):
-            self.cv_plot_display = np.load(cv_plot_disp_path)
+            self.cv_plot_display = np.load(cv_plot_disp_path)['cv_plot_display']
         else:
             print('Precomputing cv_plot_disp...')
 
@@ -176,5 +176,5 @@ class AtlasLoader(object):
             # here I create the array to plot the brain regions in the RGB
             # of the label file
             self.cv_plot_display = labels_color_augmented[labels_index_flat[self.segmentation_data.astype(np.int64).ravel()]].reshape(tuple(list(self.segmentation_data.shape) + [3]))
-            np.save(cv_plot_disp_path, self.cv_plot_display)
+            np.savez_compressed(cv_plot_disp_path, cv_plot_display=self.cv_plot_display)
 
