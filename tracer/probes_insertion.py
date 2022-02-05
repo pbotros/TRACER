@@ -115,7 +115,7 @@ class ProbesInsertion(object):
         # Figure
         self.fig, self.ax = plt.subplots(1, 1)  #, figsize=(float(d1)/dpi_atl,float(d2)/dpi_atl), dpi=dpi_atl)
         # scroll cursor
-        self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane)
+        self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane, atlas)
         self.fig.canvas.mpl_connect('scroll_event', self.tracker.onscroll)
 
 
@@ -305,7 +305,8 @@ class ProbesInsertion(object):
                 plt.draw()
                 self.fig.add_axes(self.ax)
                 plt.draw()
-                self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane, self.tracker.ind)
+                self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane, atlas,
+                                            self.tracker.ind)
                 print(self.atlas.atlas_data[250, self.tracker.ind, 250])
                 self.fig.canvas.mpl_connect('scroll_event', self.tracker.onscroll)
                 plt.show()
@@ -324,7 +325,8 @@ class ProbesInsertion(object):
                 plt.draw()
                 self.fig.add_axes(self.ax)
                 plt.draw()
-                self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane, self.tracker.ind)
+                self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane, atlas,
+                                            self.tracker.ind)
                 self.fig.canvas.mpl_connect('scroll_event', self.tracker.onscroll)
                 # self.fig.canvas.mpl_connect("motion_notify_event", self.show_annotation)
                 plt.show()

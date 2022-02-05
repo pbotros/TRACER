@@ -125,7 +125,7 @@ class VirusRegistration(object):
         # Figure
         self.fig, self.ax = plt.subplots(1, 1)  # figsize=(float(d1)/dpi_atl,float(d2)/dpi_atl), dpi=dpi_atl)
         # scroll cursor
-        self.tracker = IndexTracker(self.ax, self.atlas.atlas_data, self.atlas.pixdim, self.plane)
+        self.tracker = IndexTracker(self.ax, self.atlas, self.atlas.pixdim, self.plane, atlas)
         self.fig.canvas.mpl_connect('scroll_event', self.tracker.onscroll)
         # place a text box with bregma coordinates in bottom left in axes coords
         self.ax.text(0.03, 0.03, self.textstr, transform=self.ax.transAxes, fontsize=6, verticalalignment='bottom', bbox=self.props)
@@ -268,26 +268,16 @@ class VirusRegistration(object):
         # Show the names of the regions
         xi, yi = sel.target / self.atlas.pixdim
         if self.plane == 'c':
-            if np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[int(math.modf(xi)[1]), self.tracker.ind, int(math.modf(yi)[1])], axis=1)).size:
-                Text = self.atlas.labels_name[np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[
-                    int(math.modf(xi)[1]), self.tracker.ind, int(math.modf(yi)[1])], axis=1))[0, 0]]
-            else:
-                # display nothing
-                Text = ' '
+            Text = self.atlas.segmentation_region(int(xi), self.tracker.ind, int(yi))
         elif self.plane == 's':
-            if np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[self.tracker.ind, int(math.modf(xi)[1]), int(math.modf(yi)[1])], axis=1)).size:
-                Text = self.atlas.labels_name[np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[
-                    self.tracker.ind, int(math.modf(xi)[1]), int(math.modf(yi)[1])], axis=1))[0, 0]]
-            else:
-                # display nothing
-                Text = ' '
+            Text = self.atlas.segmentation_region(self.tracker.ind, int(xi), int(yi))
         elif self.plane == 'h':
-            if np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[int(math.modf(xi)[1]), int(math.modf(yi)[1]), self.tracker.ind], axis=1)).size:
-                Text = self.atlas.labels_name[np.argwhere(np.all(self.atlas.labels_index == self.atlas.segmentation_data[
-                    int(math.modf(xi)[1]), int(math.modf(yi)[1]), self.tracker.ind], axis=1))[0, 0]]
-            else:
-                # display nothing
-                Text = ' '
+            Text = self.atlas.segmentation_region(int(xi), int(yi), self.tracker.ind)
+        else:
+            raise ValueError(f'Unknown plane {self.plane}')
+
+        if Text is None:
+            Text = ' '
         sel.annotation.set_text(Text)
         
     
