@@ -9,7 +9,6 @@ import warnings
 
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
-
 def preprocess_histology(histology_folder):
     """
     Purpose
@@ -127,6 +126,11 @@ def preprocess_histology(histology_folder):
     histology_copy = histology
     factor = 1
     process_finished = False
+
+    def _redraw(h):
+        ax.clear()
+        ax.imshow(h)
+        fig.canvas.draw()
     while not process_finished:
         ipt = input('?: ')
         if ipt == 'a':  # if key 'a' is pressed
@@ -139,50 +143,26 @@ def preprocess_histology(histology_folder):
                 if adc == '+':
                     factor = factor + 0.1
                     histology = enhancer.enhance(factor)
-                    fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi),
-                                     dpi=my_dpi)
-                    ax = fig.add_subplot(111)
-                    # Remove whitespace from around the image
-                    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
                     # =============================================================================
                     #                 ax.set_title("Slice viewer")
                     # =============================================================================
                     # Show the histology image
-                    ax.imshow(histology)
-                    plt.tick_params(labelbottom=False, labelleft=False)
-                    plt.show(block=True)
+                    _redraw(histology)
                     print('Contrast increased')
                 elif adc == '-':
                     factor = factor - 0.1
                     histology = enhancer.enhance(factor)
-                    fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi),
-                                     dpi=my_dpi)
-                    ax = fig.add_subplot(111)
-                    # Remove whitespace from around the image
-                    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-                    # =============================================================================
-                    #                 ax.set_title("Slice viewer")
-                    # =============================================================================
-                    # Show the histology image
-                    ax.imshow(histology)
-                    plt.tick_params(labelbottom=False, labelleft=False)
-                    plt.show(block=True)
+                    _redraw(histology)
                     print('Contrast decreased')
                 elif adc == 'r':
                     histology = histology_old
                     factor = 1
-                    fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi),
-                                     dpi=my_dpi)
-                    ax = fig.add_subplot(111)
-                    # Remove whitespace from around the image
-                    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
                     # =============================================================================
                     #                 ax.set_title("Slice viewer")
                     # =============================================================================
                     # Show the histology image
-                    ax.imshow(histology)
+                    _redraw(histology)
                     plt.tick_params(labelbottom=False, labelleft=False)
-                    plt.show(block=True)
                     print('Original histology restored')
                 elif adc == 'f':
                     print('Continue editing')
@@ -193,101 +173,38 @@ def preprocess_histology(histology_folder):
             F += 10
             histology_temp = ndimage.rotate(histology_copy, F, reshape=True)
             histology = Image.fromarray(histology_temp)
-            fig = plt.figure(figsize=(float(max(histology_old.size)) / my_dpi, float(max(histology_old.size)) / my_dpi),
-                             dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Show the histology image
-            ax.imshow(histology)
-            # ax.margins(x=0, y=-0.25)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
+            _redraw(histology)
             print('10° rotation')
         elif ipt == 'y':  # if key 'q' is pressed
             # histology = histology.rotate(-10)
             F -= 10
             histology_temp = ndimage.rotate(histology_copy, F, reshape=True)
             histology = Image.fromarray(histology_temp)
-            fig = plt.figure(figsize=(float(max(histology.size)) / my_dpi, float(max(histology.size)) / my_dpi),
-                             dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Show the histology image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
+            _redraw(histology)
             print('10° rotation')
         elif ipt == 'g':
-            fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi), dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
+            _redraw(histology)
             myInterval = 50.
             ax.xaxis.set_major_locator(plticker.IndexLocator(myInterval, 0))
             ax.yaxis.set_major_locator(plticker.IndexLocator(myInterval, 0))
             # Add the grid
             ax.grid(which='major', axis='both', linestyle='-')
             # Add the image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
             print('Gridd added')
         elif ipt == 'h':
-            fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi), dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Add the grid
+            _redraw(histology)
             ax.grid(False)
-            # Add the image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
             print('Gridd removed')
         elif ipt == 'n':
             histology = histology.convert('LA')
             histology_copy = histology  # for a proper rotation
-            fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi), dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Show the histology image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
+            _redraw(histology)
             print('Histology in greyscale')
         elif ipt == 'r':
             F = 0
             histology = histology_old  # restore the original histology
             histology_copy = histology_old  # restore the oiginal histology for rotation
-            fig = plt.figure(figsize=(float(histology.size[0]) / my_dpi, float(histology.size[1]) / my_dpi), dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Show the histology image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
+            _redraw(histology)
             print('Original histology restored')
         elif ipt == 'c':
             # Setting the points for cropped image
@@ -298,18 +215,7 @@ def preprocess_histology(histology_folder):
             # Cropped image of above dimension
             histology = histology.crop((left, top, right, bottom))
             histology_copy = histology  # for a proper rotation
-            fig = plt.figure(figsize=(float(max(histology.size)) / my_dpi, float(max(histology.size)) / my_dpi),
-                             dpi=my_dpi)
-            ax = fig.add_subplot(111)
-            # Remove whitespace from around the image
-            fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-            # =============================================================================
-            #         ax.set_title("Slice viewer")
-            # =============================================================================
-            # Show the histology image
-            ax.imshow(histology)
-            plt.tick_params(labelbottom=False, labelleft=False)
-            plt.show(block=True)
+            _redraw(histology)
             print('the image is now: ' + str(histology.size[0]) + ' x ' + str(histology.size[1]) + ' pixels')
         elif ipt == 's':
             print(histology)
