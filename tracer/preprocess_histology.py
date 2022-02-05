@@ -41,7 +41,10 @@ def preprocess_histology(histology_folder):
     #        file_name.append(file[0:-4])
     #        i+=1
     file_n = input('Histology file name: ')
-    file_name = file_n + '.jpg'
+    if '.jpg' in file_n or '.tif' in file_n:
+        file_name = file_n
+    else:
+        file_name = file_n + '.jpg'
     # Open the histology
     
     histology = Image.open(os.path.join(histology_folder, file_name)).copy()

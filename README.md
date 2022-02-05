@@ -10,8 +10,8 @@ conda activate tracer
 ```
 
 TODO:
-- You need lots of RAM (maybe just initially to load masks?)
-
+- You need lots of RAM: at least ~25GB
+segmentation_path = os.path.join(atlas_folder, 'WHS_SD_rat_atlas_%s.nii.gz' % atlas_version)
 
 
 References:
