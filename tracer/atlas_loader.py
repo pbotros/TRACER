@@ -2,6 +2,7 @@ import numpy as np
 import os
 import nibabel as nib
 import cv2
+from scipy import sparse
 
 
 def readlabel(file):
@@ -102,7 +103,6 @@ class AtlasLoader(object):
             # Remove skull and tissues from atlas_data #
             CC = np.where(self.mask_data == 0)
             self.atlas_data[CC] = 0
-            atlas = {'atlas_data': self.atlas_data, 'pixdim': self.pixdim, 'mask_data': self.mask_data}
 
             print('Dumping to disk...')
             np.savez_compressed(
