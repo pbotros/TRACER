@@ -11,8 +11,6 @@ conda activate tracer
 
 TODO:
 - You need lots of RAM (maybe just initially to load masks?)
-- You need ~5GB of free space for initial load of pkl file
-- Save this as an NPZ instead??
 
 
 

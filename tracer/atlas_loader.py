@@ -128,8 +128,8 @@ class AtlasLoader(object):
         self.segmentation_data = segmentation.get_fdata()
 
         # Load Labels
-        labels_item = open(label_path, "r")
-        self.labels_index, self.labels_name, self.labels_color, self.labels_initial = readlabel(labels_item)
+        with open(label_path, "r") as labels_item:
+            self.labels_index, self.labels_name, self.labels_color, self.labels_initial = readlabel(labels_item)
 
 
         cv_plot_path = os.path.join(atlas_folder, 'cv_plot.npy')
@@ -141,16 +141,14 @@ class AtlasLoader(object):
             self.cv_plot = np.load(cv_plot_path) / 255
         else:
             print('Precomputing cv_plot...')
+            # Create an inverted map so we can index below quickly
+            labels_index_flat = np.zeros(np.max(self.labels_index.max()) + 1, dtype=np.int64)
+            labels_index_flat[self.labels_index.ravel()] = np.arange(self.labels_color.shape[0])
+
             # Atlas in RGB colors according with the label file #
-            self.cv_plot = np.zeros(shape=(self.atlas_data.shape[0], self.atlas_data.shape[1], self.atlas_data.shape[2], 3))
-            # here I create the array to plot the brain regions in the RGB
-            # of the label file
-            for i in range(len(self.labels_index)):
-                coord = np.where(self.segmentation_data == self.labels_index[i][0])
-                self.cv_plot[coord[0], coord[1], coord[2], :] = self.labels_color[i]
+            self.cv_plot = self.labels_color[labels_index_flat[self.segmentation_data.astype(np.int64).ravel()]].reshape(tuple(list(self.segmentation_data.shape) + [3]))
             np.save(cv_plot_path, self.cv_plot)
             self.cv_plot = self.cv_plot / 255
-
 
         if os.path.exists(edges_path):
             self.Edges = np.load(edges_path)
@@ -167,16 +165,16 @@ class AtlasLoader(object):
             self.cv_plot_display = np.load(cv_plot_disp_path)
         else:
             print('Precomputing cv_plot_disp...')
+
+            # Create an inverted map so we can index below quickly
+            labels_index_flat = np.zeros(np.max(self.labels_index.max()) + 1, dtype=np.int64)
+            labels_index_flat[self.labels_index.ravel()] = np.arange(self.labels_color.shape[0])
+
+            labels_color_augmented = self.labels_color.copy()
+            labels_color_augmented[0, :] = [128, 128, 128]
+
             # here I create the array to plot the brain regions in the RGB
             # of the label file
-            atlas_shape = self.atlas_data.shape
-            self.cv_plot_display = np.zeros(shape=(atlas_shape[0], atlas_shape[1], atlas_shape[2], 3))
-            for i in range(len(self.labels_index)):
-                if i == 0:
-                    coord = np.where(self.segmentation_data == self.labels_index[i][0])
-                    self.cv_plot_display[coord[0], coord[1], coord[2], :] = self.labels_color[i]
-                else:
-                    coord = np.where(self.segmentation_data == self.labels_index[i][0])
-                    self.cv_plot_display[coord[0], coord[1], coord[2], :] = [128, 128, 128]
+            self.cv_plot_display = labels_color_augmented[labels_index_flat[self.segmentation_data.astype(np.int64).ravel()]].reshape(tuple(list(self.segmentation_data.shape) + [3]))
             np.save(cv_plot_disp_path, self.cv_plot_display)
 
