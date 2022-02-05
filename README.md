@@ -4,6 +4,17 @@ TRACER-3D is a useful toolbox for visualizing the trajectories of recording elec
 Please refer to the User Manual that is available in the repository for further instructions. 
 Run pip install requirements.txt to install the neccessary packages as used during the creation of this toolbox.
 
+```
+conda create -n tracer python=3.8
+conda activate tracer
+```
+
+TODO:
+- You need lots of RAM (maybe just initially to load masks?)
+- You need ~5GB of free space for initial load of pkl file
+- Save this as an NPZ instead??
+
+
 
 References:
 

@@ -2,7 +2,6 @@ import numpy as np
 import os
 import nibabel as nib
 import cv2
-import pickle
 
 
 def readlabel(file):
@@ -26,7 +25,7 @@ def readlabel(file):
     output_initials = []
     labels = file.readlines()
     pure_labels = [x for x in labels if "#" not in x]
-    
+
     for line in pure_labels:
         line_labels = line.split()
         accessed_mapping = map(line_labels.__getitem__, [0])
@@ -67,35 +66,36 @@ class AtlasLoader(object):
 
     """
 
-    def __init__(self, atlas_folder, atlas_version='v3'):
+    def __init__(self, atlas_folder, atlas_version='v4'):
         if not os.path.exists(atlas_folder):
             raise Exception('Folder path %s does not exist. Please give the correct path.' % atlas_folder)
-        
-        atlas_data_masked_path = os.path.join(atlas_folder, 'atlas_data_masked.pkl')
+
+        atlas_data_masked_path = os.path.join(atlas_folder, 'atlas_data_masked.npz')
         if os.path.exists(atlas_data_masked_path):
-            c_file = open(atlas_data_masked_path, "rb")
-            temp_data = pickle.load(c_file)
-            c_file.close()
-            self.atlas_data = temp_data['atlas_data']
-            self.pixdim = temp_data['pixdim']
-            self.mask_data = temp_data['mask_data']
+            with np.load(atlas_data_masked_path) as temp_data:
+                self.atlas_data = temp_data['atlas_data']
+                self.pixdim = temp_data['pixdim']
+                self.mask_data = temp_data['mask_data']
         else:
             atlas_path = os.path.join(atlas_folder, 'WHS_SD_rat_T2star_v1.01.nii.gz')
             mask_path = os.path.join(atlas_folder, 'WHS_SD_rat_brainmask_v1.01.nii.gz')
-            
+
             if not os.path.exists(atlas_path):
                 raise Exception('Atlas file %s does not exist. Please download the atlas data.' % atlas_path)
 
             if not os.path.exists(mask_path):
                 raise Exception('Mask file %s does not exist. Please download the mask data.' % mask_path)
 
+            print(f'Precomputed mask {atlas_data_masked_path} not present; computing and caching on disk. This may take awhile...')
             # Load Atlas
+            print('Loading atlas...')
             atlas = nib.load(atlas_path)
             atlas_header = atlas.header
             self.pixdim = atlas_header.get('pixdim')[1]
             self.atlas_data = atlas.get_fdata()
 
             # Load Mask
+            print('Loading mask...')
             mask = nib.load(mask_path)
             self.mask_data = mask.get_fdata()[:, :, :, 0]
 
@@ -104,38 +104,43 @@ class AtlasLoader(object):
             self.atlas_data[CC] = 0
             atlas = {'atlas_data': self.atlas_data, 'pixdim': self.pixdim, 'mask_data': self.mask_data}
 
-            a_file = open(atlas_data_masked_path, "wb")
-            pickle.dump(atlas, a_file)
-            a_file.close()
-            
-        
+            print('Dumping to disk...')
+            np.savez_compressed(
+                atlas_data_masked_path,
+                atlas_data=self.atlas_data,
+                pixdim=self.pixdim,
+                mask_data=self.mask_data)
+            print('Done precomputing mask file.')
+
+
         # check other path
         segmentation_path = os.path.join(atlas_folder, 'WHS_SD_rat_atlas_%s.nii.gz' % atlas_version)
         label_path = os.path.join(atlas_folder, 'WHS_SD_rat_atlas_%s.label' % atlas_version)
-        
+
         if not os.path.exists(segmentation_path):
             raise Exception('Segmentation file %s does not exist. Please download the segmentation data.' % segmentation_path)
-        
+
         if not os.path.exists(label_path):
             raise Exception('Label file %s does not exist. Please download the label data.' % label_path)
-        
+
         # Load Segmentation
         segmentation = nib.load(segmentation_path)
         self.segmentation_data = segmentation.get_fdata()
-        
+
         # Load Labels
         labels_item = open(label_path, "r")
         self.labels_index, self.labels_name, self.labels_color, self.labels_initial = readlabel(labels_item)
-        
-        
+
+
         cv_plot_path = os.path.join(atlas_folder, 'cv_plot.npy')
         edges_path = os.path.join(atlas_folder, 'Edges.npy')
         cv_plot_disp_path = os.path.join(atlas_folder, 'cv_plot_display.npy')
-        
-        
+
+
         if os.path.exists(cv_plot_path):
             self.cv_plot = np.load(cv_plot_path) / 255
         else:
+            print('Precomputing cv_plot...')
             # Atlas in RGB colors according with the label file #
             self.cv_plot = np.zeros(shape=(self.atlas_data.shape[0], self.atlas_data.shape[1], self.atlas_data.shape[2], 3))
             # here I create the array to plot the brain regions in the RGB
@@ -145,21 +150,23 @@ class AtlasLoader(object):
                 self.cv_plot[coord[0], coord[1], coord[2], :] = self.labels_color[i]
             np.save(cv_plot_path, self.cv_plot)
             self.cv_plot = self.cv_plot / 255
-            
-            
+
+
         if os.path.exists(edges_path):
             self.Edges = np.load(edges_path)
         else:
+            print('Precomputing edges...')
             # Get the edges of the colors defined in the label #
             self.Edges = np.empty((512, 1024, 512))
             for sl in range(0, 1024):
                 self.Edges[:, sl, :] = cv2.Canny(np.uint8((self.cv_plot[:, sl, :] * 255).transpose((1, 0, 2))), 100, 200)
             np.save(edges_path, self.Edges)
-            
-            
+
+
         if os.path.exists(cv_plot_disp_path):
             self.cv_plot_display = np.load(cv_plot_disp_path)
         else:
+            print('Precomputing cv_plot_disp...')
             # here I create the array to plot the brain regions in the RGB
             # of the label file
             atlas_shape = self.atlas_data.shape
@@ -172,4 +179,4 @@ class AtlasLoader(object):
                     coord = np.where(self.segmentation_data == self.labels_index[i][0])
                     self.cv_plot_display[coord[0], coord[1], coord[2], :] = [128, 128, 128]
             np.save(cv_plot_disp_path, self.cv_plot_display)
-            
+
